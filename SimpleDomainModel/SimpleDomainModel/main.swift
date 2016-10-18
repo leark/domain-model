@@ -25,56 +25,54 @@ open class TestMe {
 //
 public struct Money {
     public var amount : Double
-    public var currency : String
+    public var currency : currencyType
     
-    init(amount: Double, currency: String) {
-        self.amount = amount
-        self.currency = currency
-
-        if !acceptableCurrency(currency: currency) {
-            print("defaulting currency to USD")
-            self.currency = "USD"
-        }
-        
+    public enum currencyType {
+        case USD
+        case GBP
+        case EUR
+        case CAN
     }
     
-    public func convert(_ to: String) -> Money {
-        var convertTo = to
-        if !acceptableCurrency(currency: convertTo) {
-            print("defaulting currency to USD")
-            convertTo = "USD"
-        }
+    init(amount: Double, currency: currencyType) {
+        self.amount = amount
+        self.currency = currency
+    }
+    
+    public func convert(_ to: currencyType) -> Money {
+        let convertTo = to
         
         if currency == convertTo {
             return Money(amount: amount, currency: currency)
         }
         
         var converted = amount
-        if currency != "USD" {
-            if currency == "GBP" {
-                converted *= 2
-            } else if currency == "EUR" {
-                converted *= (2/3)
-            } else if currency == "CAN" {
-                converted *= (1/1.25)
-            }
+        switch currency {
+        case .GBP:
+            converted *= 2
+        case .EUR:
+            converted *= (2/3)
+        case .CAN:
+            converted *= (1/1.25)
+        default:
+            break
         }
         
         switch convertTo {
-        case "GBP":
+        case .GBP:
             converted *= 0.5
-        case "EUR":
+        case .EUR:
             converted *= 1.5
-        case "CAN":
+        case .CAN:
             converted *= 1.25
         default:
-            return Money(amount: converted, currency: "USD")
+            return Money(amount: converted, currency: .USD)
         }
-
+        
         return Money(amount: converted, currency: convertTo)
     }
     
-    // returns money based on current currency
+    // returns money based on to's currency
     public func add(_ to: Money) -> Money {
         if to.currency == currency {
             return Money(amount: amount + to.amount, currency: to.currency)
@@ -83,20 +81,12 @@ public struct Money {
         }
     }
     
+    // returns money based on from's currency
     public func subtract(_ from: Money) -> Money {
         if from.currency == currency {
             return Money(amount: amount - from.amount, currency: currency)
         } else {
             return Money(amount: from.amount - convert(from.currency).amount, currency: from.currency)
-        }
-    }
-    
-    private func acceptableCurrency(currency: String) -> Bool {
-        if currency != "USD", currency != "GBP", currency != "EUR", currency != "CAN" {
-            print("Invalid currency. Only USD, GBP, EUR, CAN is accepted.")
-            return false
-        } else {
-            return true
         }
     }
 }
